@@ -13,6 +13,7 @@
     </author>
     <preference name="orienation" value="portrait" />
     <preference name="fullscreen" value="true" />
+    <icon src="icon.png" />
     <icon src="icons/ios/icon.png" gap:platform="ios" width="57" height="57" />
     <icon src="icons/ios/icon_at_2x.png" gap:platform="ios" width="114" height="114" />
     <feature name="http://api.phonegap.com/1.0/camera"/>
