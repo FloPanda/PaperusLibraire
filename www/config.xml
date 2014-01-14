@@ -1,13 +1,27 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="io.cordova.hellocordova" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>HelloCordova</name>
+<widget
+    id="fr.paperus.librairie"
+    version="0.0.1"
+    xmlns="http://www.w3.org/ns/widgets"
+    xmlns:gap="http://phonegap.com/ns/1.0">
+    <name>Paperus librairie</name>
     <description>
         Application à destination des libraires pour leur permettre de créer des offres couplées même s'ils n'ont pas accès à une imprimante ou un logiciel de caisse compatible.'
     </description>
     <author email="contact@paperus.fr" href="http://www.paperus.fr">
         Paperus Team
     </author>
-    <plugin name="Notification" value="CDVNotification" />
+    <preference name="orienation" value="portrait" />
+    <preference name="fullscreen" value="true" />
+    <icon src="icons/ios/icon.png" gap:platform="ios" width="57" height="57" />
+    <icon src="icons/ios/icon_at_2x.png" gap:platform="ios" width="114" height="114" />
+    <feature name="http://api.phonegap.com/1.0/camera"/>
+    <feature name="http://api.phonegap.com/1.0/network"/>
+    <feature name="http://api.phonegap.com/1.0/notification"/>
+    
+    <gap:plugin name="com.phonegap.plugins.barcodescanner" />
+    <gap:plugin name="com.arnia.plugins.smsbuilder" />
+    <gap:plugin name="org.apache.cordova.dialogs" />
 
     <content src="index.html" />
     <access origin="*" />
