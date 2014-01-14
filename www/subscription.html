@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Offres Couplées Paperus : inscription</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="style.css" />
+        <meta name="viewport" content="width=device-width">
+    </head>
+    <body>
+        <div class="logo">
+            <a href="index.html"><img src="Ressources/logo.png" alt="Paperus Librairie" /></a>
+        </div>
+            
+            <div class="wording">Bonjour,<br />
+               Cette application a été développée pour permettre aux 
+               libraires de proposer des offres couplées. Nous allons procéder  
+               aux vérifications de votre identité. Si vous n'êtes pas libraire 
+               mais lecteur, alors nous vous recommandons de télécharger 
+               <a href="http://www.paperus.fr">cette application </a> destinée 
+               aux lecteurs. 
+            </div>
+            <div class="wording">
+               Si vous êtes libraires, nous vous invitons à remplir le 
+               formulaire suivant, nous vous répondrons dans les meilleurs 
+               délais par mail.<br/>
+           </div>
+        <div id="signature">L'équipe Paperus</div>
+        <div id='subscriptionForm'>
+        <form method="post" action=""> <!-- TODO : gérer l'envoi de ce formulaire -->
+            <fieldset>
+                <legend>Vos coordonnées</legend>
+                <label for="name" class="subscribe">Nom :</label><br/>
+                <input type="text" name="name" id="name" size="25" required placeholder="Requis"><br/>
+                <label for="firstname" class="subscribe">Prénom :</label><br/>
+                <input type="text" name="firstname" id="firstname" size="25" required placeholder="Requis"><br/>
+                <label for="email" class="subscribe">email :</label><br/>
+                <input type="email" name="email" id="email" size="25" required placeholder="Requis"><br/>
+                <label for="phone" class="subscribe">Téléphone :</label><br/>
+                <input type="tel" name="phone" id="phone" size="25" required placeholder="Requis"><br/>
+            </fieldset>
+            <fieldset>
+                <legend>Votre librairie</legend>
+                <label for="bookstoreCommercialName" class="subscribe">Nom de la librairie :</label><br/>
+                <input type="text" name="bookstoreCommercialName" id="bookstoreCommercialName"  size="25" required placeholder="Requis"><br/>
+                <label for="bookstoreEntity" class="subscribe">Nom de l'entreprise :</label><br/>
+                <input type="text" name="bookstoreEntity" id="bookstoreEntity" required size="25" placeholder="Requis"><br/>
+                <label for="RCSNumber" class="subscribe">Numéro de SIREN :</label><br/>
+                <input type="text" name="RCSNumber" id="RCSNumber" required size="25" placeholder="Requis"><br/>
+                <label for="bookstoreRIB" class="subscribe">RIB de la librairie :</label><br/>
+                <input type="text" name="bookstoreRIB" id="bookstoreRIB" size="25"><br/>
+                
+                
+            </fieldset>
+            <input type="submit" value="S'inscrire" />
+        </form>
+         </div>
+        <div class="smallItem">
+            
+        </div>
+        <div class ="footer">
+        <p>Visitez notre site internet :<a href="http://www.paperus.fr">
+                www.paperus.fr</a> </p>  
+        </div>
+    </body>
+</html>

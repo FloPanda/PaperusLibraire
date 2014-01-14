@@ -1,0 +1,129 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 27 déc. 2013, 19:33:59
+    Author     : florian
+*/
+body
+{
+    font-family: georgia, arial;
+    background-color: rgb(193,215,169);
+    color:black;
+    width: 300px;
+    text-align: center;
+}
+
+
+
+.subscribe
+{
+    font-style : italic;
+    text-align:left;
+}
+
+.logo
+{
+    
+}
+
+.login
+{
+    color:black;
+}
+
+#login{
+    color:black;
+    font-style: italic;
+}
+
+
+.smallItem
+{
+    font-size:0.8em;
+}
+
+.footer
+{
+    font-size: 0.5em;
+    font-style: italic;
+    color:black;
+    
+}
+
+.wording
+{
+    text-align: justify;
+    margin-left:20px;
+    margin-right:20px;
+    padding-top:5px;
+}
+
+.form
+{
+    color:black;
+    font-style: italic;
+}
+
+
+
+#signature
+{
+    margin-top:5px;
+    font-style:italic;
+    text-align:right;
+    padding-right: 20px;    
+}
+
+#subscriptionForm
+{
+   
+   
+}
+
+#name,#RCSNumber,#bookstoreCommercialName,#bookstoreEntity,#bookstoreRIB,#email,#firstname,#phone
+{
+    font-style: italic;
+}
+
+legend
+{
+    text-align: left;
+}
+
+#wrongPassword,#subscriptionSent
+{
+    background-color: gray;
+    text-align: center;
+    margin-left: 25px;
+    margin-top: 20px;
+    padding: 6px;
+    width: 250px;
+    opacity: 0.8;
+    border-radius:4px;
+}
+
+#wordingWrong,#wordingsubscription
+{
+    padding-bottom: 10px;
+}
+
+#deco
+{
+    width:250px;
+    margin-left: 25px;
+
+}
+
+.checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+
+
+
+

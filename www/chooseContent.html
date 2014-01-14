@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Paperus</title>
+            <link rel="stylesheet" type="text/css" href="css/style.css" />
+            <link rel="stylesheet" href="css/themes/paperus.min.css" />
+            <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.0/jquery.mobile.structure-1.4.0.min.css" />
+            <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+            <script src="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js"></script>
+            <!-- importation du bibliothèque cordova ( phoneGap ) -->
+            <script src="cordova.js"></script>
+            <script src="js/main.js"></script>
+            <script src="js/mustache.js"></script>
+    </head>
+    <body>
+        <div class="ui-header ui-bar-a" data-swatch="a" data-theme="a" data-form="ui-bar-a" data-role="header" role="banner">
+            <a class="ui-btn-left ui-btn-corner-all ui-btn ui-icon-home ui-btn-icon-notext ui-shadow" title=" Home " data-form="ui-icon" data-role="button" role="button" onclick="backToHome();"> Home </a>
+            <h1 class="ui-title" tabindex="0" role="heading" aria-level="1">Création de code</h1>
+            <a class="ui-btn-right ui-btn-corner-all ui-btn ui-icon-grid ui-btn-icon-notext ui-shadow" title=" Navigation " data-form="ui-icon" data-role="button" role="link" href="settings.html">  </a>
+        </div>
+         
+        <div id='choice'>
+
+            <form>
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <div id='articleOKContent'>
+                            Il n'y a aucune offre couplée disponible pour ces ISBNs'
+                        </div>
+
+                    </fieldset>
+                  </div>
+
+            </form>
+            <article id='articleKOContent'>
+            </article>
+         </div>
+       <div class ="footer">
+        <p>Visitez notre site internet :<a href="http://www.paperus.fr">
+                www.paperus.fr</a> </p>  
+        </div>
+       <script>
+           //fonction qui génère la page chooseContent.html
+           function drawContents(){
+               if (window.sessionStorage["ISBNNoContentList"]!= undefined){
+               $.get('js/template.html', function(template) {
+                    // charge le fichier templates et récupère le contenu de la
+                    var ISBNNoContent= {"ISBN":JSON.parse(window.sessionStorage["ISBNNoContentList"])};
+                    var template = $(template).filter('#tpl-noContent').html();
+                    var html = Mustache.to_html(template, ISBNNoContent);
+                    $('#articleKOContent').html(html);
+                     },'html'); }
+               if (window.sessionStorage["ISBNContentList"]!= undefined){
+                $.get('js/template.html', function(template) {
+                    // charge le fichier templates et récupère le contenu de la
+                      var ISBNContentList = [];
+                      var ISBNContent= {};
+                      var Contents = JSON.parse(window.sessionStorage["contenus"]);
+                      var ISBNList= JSON.parse(window.sessionStorage["ISBNContentList"]);
+                      var compteur=0;
+                      for (var i=0, c=ISBNList.length; i<c; i++){
+                        ISBNContent.ISBN = ISBNList.pop();
+                        ISBNContent.content = JSON.parse(Contents.pop());
+                        ISBNContentList.push(ISBNContent);
+                        ISBNContent={};
+                      }
+                    var template = $(template).filter('#tpl-contentList').html();
+                      ISBNContentList={ISBNList: ISBNContentList};
+                    var html = Mustache.to_html(template, ISBNContentList);
+                    $('#articleOKContent').html(html);
+                      },'html');}
+                
+               }
+           $(document).ready(
+                             function(){drawContents();});
+        </script>
+    </body>
+</html>

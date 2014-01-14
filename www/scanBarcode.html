@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Paperus</title>
+            <link rel="stylesheet" type="text/css" href="css/style.css" />
+            <link rel="stylesheet" href="css/themes/paperus.min.css" />
+            <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.0/jquery.mobile.structure-1.4.0.min.css" />
+            <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+            <script src="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js"></script>
+            <!-- importation du bibliothèque cordova ( phoneGap ) -->
+            <script src="js/main.js"></script>
+            <script src="cordova.js"></script>
+    </head>
+    <body>
+        <div class="ui-header ui-bar-a" data-swatch="a" data-theme="a" data-form="ui-bar-a" data-role="header" role="banner">
+            <a class="ui-btn-left ui-btn-corner-all ui-btn ui-icon-home ui-btn-icon-notext ui-shadow" title=" Home " data-form="ui-icon" data-role="button" role="button" onclick="backToHome();"> Home </a>
+            <h1 class="ui-title" tabindex="0" role="heading" aria-level="1">Création de code</h1>
+            <a class="ui-btn-right ui-btn-corner-all ui-btn ui-icon-grid ui-btn-icon-notext ui-shadow" title=" Navigation " data-form="ui-icon" data-role="button" role="link" href="settings.html">  </a>
+        </div>
+        <div id='scanForm'>
+            <div data-role="content">
+                <p>Saisissez ici les codes EAN 13 de vos livres</p>
+                <div id='eanField'>
+                <input type="text" name="ISBN" id="ISBN" value="" placeholder="EAN13"/><br/>
+                </div>
+                <p>
+                    <input type="submit" name="submit" value="Terminé" onclick="obtainAllContent();" />
+                </p>   
+            </div>
+        </div> 
+        <div class ="footer">
+        <p>Visitez notre site internet :<a href="http://www.paperus.fr">
+                www.paperus.fr</a> </p>  
+        </div>
+        <script>
+            function liveForm (){
+                $( "#eanField" ).keypress(function( event ) {
+                                           if ( event.which == 13 ) {
+                                          $('#eanField').append('<input type="text" name="ISBN" id="ISBN" value="" placeholder="EAN13"/><br/>');
+                                          
+                                    }
+                                    }
+                                    );
+            }
+        
+    //je lance LiveForm()
+        $(document).ready(function(){liveForm();});
+        
+        </script>
+    </body>
+</html>

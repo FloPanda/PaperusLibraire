@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Offres Couplées Paperus : paramètres du compte</title>
+        <meta charset="UTF-8">
+            <link rel="stylesheet" type="text/css" href="css/style.css" />
+            <link rel="stylesheet" href="css/themes/paperus.min.css" />
+            <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.0/jquery.mobile.structure-1.4.0.min.css" />
+            <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+            <script src="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js"></script>
+            <!-- importation du bibliothèque cordova ( phoneGap ) -->
+            <script src="cordova.js"></script>
+            <script src="js/main.js"></script>
+        <meta name="viewport" content="width=device-width">
+    </head>
+    <body>
+        <div class="ui-header ui-bar-a" data-swatch="a" data-theme="a" data-form="ui-bar-a" data-role="header" role="banner">
+            <a class="ui-btn-left ui-btn-corner-all ui-btn ui-icon-home ui-btn-icon-notext ui-shadow" title=" Home " data-form="ui-icon" data-role="button" role="button" onclick="backToHome();"> Home </a>
+            <h1 class="ui-title" tabindex="0" role="heading" aria-level="1">Création de code</h1>
+            <a class="ui-btn-right ui-btn-corner-all ui-btn ui-icon-grid ui-btn-icon-notext ui-shadow" title=" Navigation " data-form="ui-icon" data-role="button" role="link" href="settings.html">  </a>
+        </div>
+        
+            <p>
+            <div id="account">
+                Vous êtes connectés avec le compte de
+            </div>
+            <br/><!--TODO gérer l'ajout du nom à cet encroit-->
+                <button data-theme="a" data-form="ui-btn-up-a" class=" ui-btn ui-btn-a ui-btn-icon-left ui-shadow ui-corner-all" onclick="logout();" data-role="none">Se déconnecter</button>
+            </p>
+        <div class="footer">
+        <p>Visitez notre site internet :<a href="http://www.paperus.fr">
+                www.paperus.fr</a> </p>
+        </div>
+        <script>
+            $(document).ready(function(){
+                              $('#account').append(' '+window.localStorage["email"]+'.');
+                              });
+        </script>
+    </body>
+</html>
