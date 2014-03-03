@@ -11,22 +11,26 @@
         </header>
         <ul class="checklist">
         {{#content}}<li class="contentELem">
-		<input type="checkbox" name={{id}} id={{id}} class="custom" />
-		<label for={{id}}>
-            {{name}} </label>
+        <div class="ui-checkbox">
+		<input type="checkbox" name={{content.id}} id={{idCheckBox}} class="custom" />
+		<label for={{idCheckBox}}>
+            {{name}}
             <div class= "contentDesc">
             <ul class="contentAttribute">
-                <li>Type : {{type}}</li>
-                <li>Description : {{description}}</li>
-                <li>Format : {{#formats}}{{format}}, {{/formats}}</ul></li>
-                <li>Prix : {{price}} euros</li>
+                <li>Type : {{content.type}}</li>
+                <li>Description : {{content.description}}</li>
+                <li>Format : {{#formats}}{{format}}, {{/formats}}</li>
+                <li>Prix : {{content.price}} euros</li>
             </ul>
-            </div>
+        
+            </div></label>
+        </div>
 
         </li>{{/content}}
         </ul>
     </article>{{/ISBNList}}
-    <button data-theme="a" data-form="ui-btn-up-a" class=" ui-btn ui-btn-a ui-btn-icon-left ui-shadow ui-corner-all" onclick="makeCodes();" data-role="none">Génerer les codes</button>
+    <br/>
+    <button data-theme="a" data-form="ui-btn-up-a" class=" ui-btn ui-btn-a ui-btn-icon-left ui-shadow ui-corner-all" onclick="return makeCodes();" data-role="none">Génerer les codes</button>
     
 </script>
     
@@ -55,3 +59,30 @@
     <a href="mailto:?subject=Offre couplée de votre libraire&body=Retrouvez vos contenus numériques à ces adresses : <br/>{{#ISBNTagList}}http://dev-www.paperus.fr/consume/{{link}} <br/>{{/ISBNTagList}}"> Envoyer tous les liens par email</a> 
 </script>
 
+<script type="text/html" id="tpl-ISBN">
+    <div class="ui-input-text ui-body-inherit ui-corner-all ui-shadow-inset"><input type="text" name="ISBN" id="ISBN" value="" placeholder="EAN13" maxlength="13"></div>
+</script>
+
+<!-- template d'une popup -->
+<script typr="text/html" id="tpl-PopUp">
+    <div data-role="popup" id="popupLogin" class="ui-content">
+		<div data-role="header">
+			<h1>My dialog heading</h1>
+		</div>
+		<div data-role="content">
+			<p>Content goes here.</p>
+		</div>
+    </div>
+</script>
+
+<!-- template d'une modale -->
+<script typr="text/html" id="tpl-Modal">
+    <div data-role="popup" id="popupLogin" class="ui-content">
+		<div data-role="header">
+			<h1>My dialog heading</h1>
+		</div>
+		<div data-role="content">
+			<p>Content goes here.</p>
+		</div>
+    </div>
+</script>

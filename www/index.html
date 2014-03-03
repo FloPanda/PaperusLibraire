@@ -25,26 +25,27 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>Paperus</title>
             <link rel="stylesheet" type="text/css" href="css/style.css" />
-            <link rel="stylesheet" href="css/themes/paperus.min.css" />
-            <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.0/jquery.mobile.structure-1.4.0.min.css" />
-            <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-            <script src="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js"></script>
+            <link rel="stylesheet" href="js/paperus.min.css" /> 
+            <link rel="stylesheet" href="js/jquery.mobile.icons.min.css" />
+            <link rel="stylesheet" href="js/jquery.mobile..structure-1.4.0.min.css" />
+            <script src="js/jquery-1.10.2.min.js"></script>
+            <script src="js/jquery.mobile-1.4.0.min.js"></script>
             <!-- importation du bibliothèque cordova ( phoneGap ) -->
-            <script src="cordova.js"></script>
+            <script src="phonegap.js"></script>
+            <script src="js/mustache.js"></script>
             <script src="js/main.js"></script>
             <script>
-                document.addEventListener("deviceready", onDeviceReady, false);
-                function onDeviceReady() {
-                    // Empty
-                }
+                init();
             </script>
             </head>
-    <body class="light">
-        <div id="mainView">
-            <div class="maxWidth">
-                <!-- après je pourrai mettre un onglet de navigation sur le côté avec un div id="sideNav" mais pas sur cette page de connexion -->
-                <div id="index">
-                    <header id="mainHeader">
+    <body>
+<!-- page inutile qui attend juste que tout soit opérationnel -->
+        <div data-role="page" id="launching" data-dom-cache="false">
+        </div>
+        
+<!-- page de connexion si l'utilisateur n'a pas d'identifiant enregistré ou si celui-ci ne fonctionne plus -->
+        <div data-role="page" id="login">
+                    <div data-role="header" id="mainHeader">
                         <div class="maxWidth">
                             <hgroup>
                                 <h1>Paperus Librairie</h1>
@@ -52,26 +53,39 @@
                             </hgroup>
                         </div>
                     </header>
-                    <div id="content" class="maxWidth">
+                    <div data-role="content" id="content">
                         <article id="connexionForm" class="component">
                             <header>
-                                <h2>Connexion</h2>
+                                <h2>Connectez-vous</h2>
                             </header>
-                            <input type="text" class="largeInput" id="email" value="" placeholder="Identifiant" /> <br/>
-                            <input type="password" class="largeInput" id="password" value="" placeholder="Mot de passe" /> <br/>
-                            <button data-theme="a" data-form="ui-btn-up-a" class=" ui-btn ui-btn-a ui-btn-icon-left ui-shadow ui-corner-all" onclick="login();" data-role="none">Connexion</button>
+                                <div data-role="fieldcontain" class="ui-hide-label">
+                                    <input type="text" class="largeInput" id="email" value="" placeholder="Identifiant" />
+                                    <label for="email">email:</label>
+                                    <input type="password" class="largeInput" id="password" value="" placeholder="Mot de passe" /> <br/>
+                                    <label for"password">mot de passe:</label>
+                                </div>
+                            <button data-theme="a" data-form="ui-btn-up-a" class=" ui-btn ui-btn-a ui-btn-icon-left ui-shadow ui-corner-all ui-icon-check" onclick="login();" data-role="none">Connexion</button>
                         </article>
+                        <div data-role="popup" id="popupLogin" class="ui-content">
+	                    	<div data-role="header">
+		                    	<h1>My dialog heading</h1>
+		                    </div>
+		                    <div data-role="content">
+			                    <p>Content goes here.</p>
+			                </div>
+			            </div>
                         <article id="otherPossibilities" class="component">
                             <header>
                                 <h2></h2>
                             </header>
                             <div class="smallButtonBar">
                                 <div class="smallButtonBarItem">
-                                    <a href="subscription.html" class="smallButtonBarItemButton" data-role="none">Inscription</a>
-                                    <a href="forgot.html" class="tsmallButtonBarItemButton" data-role="none">Mot de passe oublié</a>
+                                    <a href="#subscription" class="smallButtonBarItemButton" data-role="none">Inscription</a>
+                                    <a href="#forgot" class="tsmallButtonBarItemButton" data-role="none">Mot de passe oublié</a>
                                 </div>
                             </div>
                         </article>
+
                         <footer>
                             <p>visitez notre <a href="http://www.paperus.fr">site internet</a> </p>
                             <div class="copyright">
@@ -79,8 +93,292 @@
                             </div>
                         </footer>
                     </div>
-                </div>
+                    </div>
+        <!-- popup modèle -->
+            <div data-role="popup" class="popupBasic">
+            	<h2></h2>
+            	<p></p>       
+            	<a data-inline="true" data-role="button" data-rel="back" href="#">Ok</a>        
             </div>
+        
+        <div data-role="popup" class="modalBasic">
+            <h2></h2>
+	        <p></p>
+            <a id="kobutton" data-inline="true" data-role="button" href="#">Annuler</a>
+            <a id="okbutton" data-inline="true" data-role="button" href="#">Confirmer</a>
         </div>
+        
+        </div>
+                    
+<!-- Page principale permettant le scan d'un code -->
+        <div data-role="page" id="scanBarcode">
+            <div data-role="header" role="banner">
+                <a class="ui-btn-left ui-btn-corner-all ui-btn ui-btn-icon-notext ui-shadow ui-icon-home " title=" Home" data-form="ui-icon" data-role="button" role="button" onclick="backToHome($(this));"> Home </a>
+                <h1 class="ui-title" tabindex="0" role="heading" aria-level="1">Création de code</h1>
+                <a class="ui-btn-right ui-btn-corner-all ui-btn ui-icon-grid ui-btn-icon-notext ui-shadow" title=" Navigation " data-form="ui-icon" data-role="button" role="link" href="#" onclick="openSettings()">  </a>
+            </div>
+            <form id='scanForm'>
+                    <p>Saisissez ici les codes EAN 13 de vos livres</p>
+                    	<div data-role="fieldcontain" class="ui-hide-label">
+	                 	    <label for="ISBN">ISBN:</label>
+                            <input type="text" name="ISBN" id="ISBN" value="" placeholder="EAN13" data-clear-btn="true" maxlength="13"/>
+                        </div>
+                        <div id="eanField"></div>
+                    <p>
+                    <br/>
+                    <a id="termine" data-role="button" onclick="return obtainAllContent();"> Terminé </a>    
+                    <a id="reset" data-role="button" onclick="return resetScanBarcode();">Tout effacer</a>
+
+                    </p>
+            </form>
+            <div class ="footer">
+                <p>Visitez notre site internet :<a href="http://www.paperus.fr">
+                    www.paperus.fr</a> </p>
+            </div>
+            <!-- popup modèle -->
+            <div data-role="popup" class="popupBasic">
+            	<h2></h2>
+            	<p></p>       
+            	<a data-inline="true" data-role="button" data-rel="back" href="#">Ok</a>        
+            </div>
+        
+        <div data-role="popup" class="modalBasic">
+            <h2></h2>
+	        <p></p>
+            <a id="kobutton" data-inline="true" data-role="button" href="#">Annuler</a>
+            <a id="okbutton" data-inline="true" data-role="button" href="#">Confirmer</a>
+        </div>
+        
+        </div>
+        
+        
+<!-- page de sélection des contenus liés aux codes scannés plus haut -->
+        <div data-role="page" id="chooseContent">
+            <div data-role="header" role="banner">
+                <a class="ui-btn-left ui-btn-corner-all ui-btn ui-icon-home ui-btn-icon-notext ui-shadow" title=" Home " data-form="ui-icon" data-role="button" role="button" onclick="backToHome($(this));"> Home </a>
+                <h1 class="ui-title" tabindex="0" role="heading" aria-level="1">Création de code</h1>
+                <a class="ui-btn-right ui-btn-corner-all ui-btn ui-icon-grid ui-btn-icon-notext ui-shadow" title=" Navigation " data-form="ui-icon" data-role="button" role="link" href="#" onclick="openSettings()">  </a>
+            </div>
+            
+            <div id='choice'>
+                <form>
+                    <div data-role="fieldcontain">
+                        <fieldset data-role="controlgroup">
+                            <div id='articleOKContent'>
+                                Il n'y a aucune offre couplée disponible pour ces ISBNs'
+                            </div>
+                        </fieldset>
+                    </div>
+                </form>
+                
+                <article id='articleKOContent'>
+                </article>
+                
+            </div>
+            <div class ="footer">
+                <p>Visitez notre site internet :<a href="http://www.paperus.fr">
+                    www.paperus.fr</a> </p>
+            </div>
+            <!-- popup modèle -->
+            <div data-role="popup" class="popupBasic">
+            	<h2></h2>
+            	<p></p>       
+            	<a data-inline="true" data-role="button" data-rel="back" href="#">Ok</a>        
+            </div>
+        
+        <div data-role="popup" class="modalBasic">
+            <h2></h2>
+	        <p></p>
+            <a id="kobutton" data-inline="true" data-role="button" href="#">Annuler</a>
+            <a id="okbutton" data-inline="true" data-role="button" href="#">Confirmer</a>
+        </div>
+        
+        </div>
+        
+        
+<!-- page de visualisation des tags -->
+        <div data-role="page" id="visualizeTag">
+            <div data-role="header" role="banner">
+                <a class="ui-btn-left ui-btn-corner-all ui-btn ui-icon-home ui-btn-icon-notext ui-shadow" title=" Home " data-form="ui-icon" data-role="button" role="button" onclick="backToHome($(this));"> Home </a>
+                <h1 class="ui-title" tabindex="0" role="heading" aria-level="1">Création de code</h1>
+                <a class="ui-btn-right ui-btn-corner-all ui-btn ui-icon-grid ui-btn-icon-notext ui-shadow" title=" Navigation " data-form="ui-icon" data-role="button" role="link" href="#" onclick="openSettings()">  </a>
+            </div>
+            <div id='Code'>
+                Il n'y a pas de QRCode à scanner<br/>
+            </div>
+            <div class ="footer">
+                <p>Visitez notre site internet :<a href="http://www.paperus.fr">
+                    www.paperus.fr</a> </p>
+            </div>
+            <!-- popup modèle -->
+            <div data-role="popup" class="popupBasic">
+            	<h2></h2>
+            	<p></p>       
+            	<a data-inline="true" data-role="button" data-rel="back" href="#">Ok</a>        
+            </div>
+        
+        <div data-role="popup" class="modalBasic">
+            <h2></h2>
+	        <p></p>
+            <a id="kobutton" data-inline="true" data-role="button" href="#">Annuler</a>
+            <a id="okbutton" data-inline="true" data-role="button" href="#">Confirmer</a>
+        </div>
+        
+        </div>
+        
+<!-- page regroupant les settings du compte -->
+        <div data-role="page" id="settings">
+            <div data-role="header" role="banner">
+                <a class="ui-btn-left ui-btn-corner-all ui-btn ui-icon-home ui-btn-icon-notext ui-shadow" title=" Home " data-form="ui-icon" data-role="button" role="button" onclick="backToHome($(this));"> Home </a>
+                <h1 class="ui-title" tabindex="0" role="heading" aria-level="1">Création de code</h1>
+                <a class="ui-btn-right ui-btn-corner-all ui-btn ui-icon-grid ui-btn-icon-notext ui-shadow" title=" Navigation " data-form="ui-icon" data-role="button" role="link" href="#" onclick="openSettings()">  </a>
+            </div>
+            
+            <p>
+            <div id="account">
+                Vous êtes connectés avec le compte de
+            </div>
+            <br/>
+            <button data-theme="a" data-form="ui-btn-up-a" class=" ui-btn ui-btn-a ui-btn-icon-left ui-shadow ui-corner-all" onclick="logout();" data-role="none">Se déconnecter</button>
+            </p>
+            <div class="footer">
+                <p>Visitez notre site internet :<a href="http://www.paperus.fr">
+                    www.paperus.fr</a> </p>
+            </div>
+            <!-- popup modèle -->
+            <div data-role="popup" class="popupBasic">
+            	<h2></h2>
+            	<p></p>       
+            	<a data-inline="true" data-role="button" data-rel="back" href="#">Ok</a>        
+            </div>
+        
+        <div data-role="popup" class="modalBasic">
+            <h2></h2>
+	        <p></p>
+            <a id="kobutton" data-inline="true" data-role="button" href="#">Annuler</a>
+            <a id="okbutton" data-inline="true" data-role="button" href="#">Confirmer</a>
+        </div>
+        
+        </div>
+        
+        
+<!-- formulaire d'inscription -->
+        <div data-role="page" id="subscription">
+            <div data-role="header" role="banner">
+                <a class="ui-btn-left ui-btn-corner-all ui-btn ui-icon-home ui-btn-icon-notext ui-shadow" title=" Home " data-form="ui-icon" data-role="button" role="button" onclick="backToHome($(this));"> Home </a>
+                <h1 class="ui-title" tabindex="0" role="heading" aria-level="1">Création de code</h1>
+                <a class="ui-btn-right ui-btn-corner-all ui-btn ui-icon-grid ui-btn-icon-notext ui-shadow" title=" Navigation " data-form="ui-icon" data-role="button" role="link" href="#" onclick="openSettings()">  </a>
+            </div>
+            
+            <div class="wording">Bonjour,<br />
+                Cette application a été développée pour permettre aux
+                libraires de proposer des offres couplées. Nous allons procéder
+                aux vérifications de votre identité. Si vous n'êtes pas libraire
+                mais lecteur, alors nous vous recommandons de télécharger
+                <a href="http://www.paperus.fr">cette application </a> destinée
+                aux lecteurs.
+            </div>
+            <div class="wording">
+                Si vous êtes libraires, nous vous invitons à remplir le
+                formulaire suivant, nous vous répondrons dans les meilleurs
+                délais par mail.<br/>
+            </div>
+            <div id="signature">L'équipe Paperus</div>
+            <div id='subscriptionForm'>
+                <form method="post"> <!-- TODO : gérer l'envoi de ce formulaire -->
+                    <fieldset>
+                        <legend>Vos coordonnées</legend>
+                        <label for="name" class="subscribe">Nom :</label><br/>
+                        <input type="text" name="name" id="name" size="25" required placeholder="Requis"><br/>
+                            <label for="firstname" class="subscribe">Prénom :</label><br/>
+                            <input type="text" name="firstname" id="firstname" size="25" required placeholder="Requis"><br/>
+                                <label for="email" class="subscribe">email :</label><br/>
+                                <input type="email" name="email" id="email" size="25" required placeholder="Requis"><br/>
+                                    <label for="phone" class="subscribe">Téléphone :</label><br/>
+                                    <input type="tel" name="phone" id="phone" size="25" required placeholder="Requis"><br/>
+                                        </fieldset>
+                    <fieldset>
+                        <legend>Votre librairie</legend>
+                        <label for="bookstoreCommercialName" class="subscribe">Nom de la librairie :</label><br/>
+                        <input type="text" name="bookstoreCommercialName" id="bookstoreCommercialName"  size="25" required placeholder="Requis"><br/>
+                         <label for="bookstoreEntity" class="subscribe">Nom de l'entreprise :</label><br/>
+                         <input type="text" name="bookstoreEntity" id="bookstoreEntity" required size="25" placeholder="Requis"><br/>
+                         <label for="RCSNumber" class="subscribe">Numéro de SIREN :</label><br/>
+                         <input type="text" name="RCSNumber" id="RCSNumber" required size="25" placeholder="Requis"><br/>
+                         <label for="bookstoreRIB" class="subscribe">RIB de la librairie :</label><br/>
+                         <input type="text" name="bookstoreRIB" id="bookstoreRIB" size="25"><br/>
+                    </fieldset>
+                    <a id="subscribe" data-role="button" onclick="sbscribe();"> S'inscrire </a>    
+                </form>
+            </div>
+            <div class="smallItem">
+                
+            </div>
+            <div class ="footer">
+                <p>Visitez notre site internet :<a href="http://www.paperus.fr">
+                    www.paperus.fr</a> </p>  
+            </div>
+            <!-- popup modèle -->
+            <div data-role="popup" class="popupBasic">
+            	<h2></h2>
+            	<p></p>       
+            	<a data-inline="true" data-role="button" data-rel="back" href="#">Ok</a>        
+            </div>
+        
+        <div data-role="popup" class="modalBasic">
+            <h2></h2>
+	        <p></p>
+            <a id="kobutton" data-inline="true" data-role="button" href="#">Annuler</a>
+            <a id="okbutton" data-inline="true" data-role="button" href="#">Confirmer</a>
+        </div>
+        
+        </div>
+<!-- en cas d'oubli du mot de passe -->
+        <div data-role="page" id="forgot">
+            <div data-role="header" role="banner">
+                <a class="ui-btn-left ui-btn-corner-all ui-btn ui-icon-home ui-btn-icon-notext ui-shadow" title=" Home " data-form="ui-icon" data-role="button" role="button" onclick="backToHome($(this));"> Home </a>
+                <h1 class="ui-title" tabindex="0" role="heading" aria-level="1">Création de code</h1>
+                <a class="ui-btn-right ui-btn-corner-all ui-btn ui-icon-grid ui-btn-icon-notext ui-shadow" title=" Navigation " data-form="ui-icon" data-role="button" role="link" href="#" onclick="openSettings()">  </a>
+            </div>
+            <!-- popup modèle -->
+            <div data-role="popup" class="popupBasic">
+            	<h2></h2>
+            	<p></p>       
+            	<a data-inline="true" data-role="button" data-rel="back" href="#">Ok</a>        
+            </div>
+        
+        <div data-role="popup" class="modalBasic">
+            <h2></h2>
+	        <p></p>
+            <a id="kobutton" data-inline="true" data-role="button" href="#">Annuler</a>
+            <a id="okbutton" data-inline="true" data-role="button" href="#">Confirmer</a>
+        </div>
+        
+        </div>
+        
     </body>
+    
+<!-- popup modèle -->
+            <div data-role="popup" class="popupBasic">
+            	<h2></h2>
+            	<p></p>       
+            	<a data-inline="true" data-role="button" data-rel="back" href="#">Ok</a>        
+            </div>
+        
+        <div data-role="popup" class="modalBasic">
+            <h2></h2>
+	        <p></p>
+            <a id="kobutton" data-inline="true" data-role="button" href="#">Annuler</a>
+            <a id="okbutton" data-inline="true" data-role="button" href="#">Confirmer</a>
+        </div>
+        
+        
+     <!--   <div class="ui-popup-container ui-popup-active" id="popupBasic-popup" style="max-width: 1250px; top: 235px; left: 377.5px;" tabindex="0"><div data-role="popup" id="popupBasic" class="ui-popup ui-body-inherit ui-overlay-shadow ui-corner-all">
+            <h2>Le login et mot de passe sont obligatoire</h2>
+	        <p></p>
+	        
+            <a data-inline="true" data-role="button" data-rel="back" href="#" data-icon="check" class="ui-link ui-btn ui-icon-check ui-btn-icon-left ui-btn-inline ui-shadow ui-corner-all" role="button">Ok</a>
+        </div></div> -->
+        
+        
 </html>

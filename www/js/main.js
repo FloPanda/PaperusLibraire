@@ -1,8 +1,14 @@
 //todo : vérifier en permanence que le mec est connecté
-
+var host = "http://dev-ws.paperus.fr";
+var debug = true;
+function log(mess) {
+    if (debug) {
+        console.log(mess);
+    }
+}
 function init() {
-	document.addEventListener("deviceready", deviceReady, true);
-	delete init;
+	//document.addEventListener("deviceready", deviceReady, true);
+    deviceReady();
 }
 
 function checkPreAuth() {
@@ -10,68 +16,141 @@ function checkPreAuth() {
         var u= window.localStorage["email"];
         var p= window.localStorage["password"];
         var okbool = handleLogin(u, p);
+        if (okbool) {
+            window.localStorage["email"]=u;
+            window.localStorage["password"]=p;
+        } else {
+            window.localStorage.removeItem("email");
+            window.localStorage.removeItem("password");
+        }
         return (okbool);
     } else {
-        return (false);    }
+        return (false);
+    }
 }
 
 //fonction qui se charge de reconnecter en toute situation (appelée uniquement par checkPreAuth)
 function handleLogin(u,p) {
     if(u != '' && p!= '') {
+        var bool = false;
         $.ajax({
                type:'POST',
-               url: "http://dev-ws.paperus.fr/2/sessions",
+               url: host + "/2/sessions",
                data: {email:u,password:p},
+               async: false,
                statusCode:
                {
                200 : function(res){
                //j'enregistre l'id, le mot de passe, le token et la date de fin
                window.localStorage["token"]=res.token;
                window.localStorage["expireAt"]=res.expireAt;
-               window.location = "scanBarcode.html";
+               bool = true;
                },
                401 : function(){
-               self.showAlert("Connexion impossible, le couple identifiant/mot de passe n'a pas été reconnu", "erreur");
+               self.showAlert(current, "Connexion impossible, le couple identifiant/mot de passe n'a pas été reconnu", "erreur");
                },
                400 : function(){
-               self.showAlert("votre champs email ne contient pas un email valide", "erreur");
+               self.showAlert(current, "votre champs email ne contient pas un email valide", "erreur");
                },
                500: function(){
-               self.showAlert("Le serveur vient de rencontrer une erreur inattendue, nous avons enregistré le problème.", "erreur");
+               self.showAlert(current, "Le serveur vient de rencontrer une erreur inattendue, nous avons enregistré le problème.", "erreur");
                },
                404: function(){
-               self.showAlert("le serveur ne répond pas, il semble y avoir un problème...", "erreur");
+               self.showAlert(current, "le serveur ne répond pas, il semble y avoir un problème...", "erreur");
                }
                },
                dataType: "JSON"
                });
     } else {
-        self.showAlert("L'un des champs est resté vide", "erreur");
+        self.showAlert(current, "L'un des champs est resté vide", "erreur");
     }
-    return false;
+    return (bool);
 }
 
+function onGlobal(){
+    $(document).on("pageshow", "#login", function() {
+                   if(checkPreAuth()){openScanBarcode();}
+                   });
+    $(document).on("pageshow",  "#scanBarcode", function(event, ui) {
+                   
+                   } );
+    $(document).on("pageshow", "#chooseContent", function (event, ui) {
+                   log("chooseContent");
+                   drawContents();
+                   } );
+    $(document).on("pageshow",  "#visualizeTag", function(event, ui) {
+                   drawTags();
+                   } );
+    $(document).on("pageshow",  "#settings", function(event, ui) {
+                   $('#account').append(' '+window.localStorage["email"]+'.');
+                   } );
+    $(document).on("pageshow", "#subscription", function() {
+                   $("#subscriptionForm").on("submit",login);
+                   });
+
+}
+//fonction appelée ailleurs pour ouvrir proprement la page login
+function openLogin(){
+    $.mobile.pageContainer.pagecontainer('change', "#login");   
+}
+
+//fonction appelée ailleurs pour ouvrir proprement la page scanBarcode
+function openScanBarcode(){
+    $.mobile.pageContainer.pagecontainer('change', "#scanBarcode");
+
+
+  //  $(':mobile-pagecontainer').pagecontainer('change', '#scanbarcode', { changeHash: false, showLoadMsg: true });
+}
+
+//fonction appelée ailleurs pour ouvrir proprement la page chooseContent
+function openChooseContent() {
+    $.mobile.pageContainer.pagecontainer('change', "#chooseContent");
+}
+
+//fonction appelée ailleurs pour ouvrir proprement la page visualizeTag
+function openVisualizeTag(){
+    $.mobile.pageContainer.pagecontainer('change', "#visualizeTag");
+}
+
+//fonction appelée ailleurs pour ouvrir proprement la page settings
+function openSettings(){
+    $(':mobile-pagecontainer').pagecontainer('change', '#settings');
+}
+
+//fonction appelée ailleurs pour ouvrir proprement la page subscription
+function openSubscription(){
+    $(':mobile-pagecontainer').pagecontainer('change', '#subscription');
+}
+
+//fonction appelée par init qui vérifie si nous avons des identifiants, nous connecte le cas échéant ou nous propose de nous connecter
 function deviceReady() {
-	console.log("deviceReady");
-	$("#loginPage").on("pageinit",function() {
-		console.log("pageinit run");
-		$("#loginForm").on("submit",handleLogin);
-		checkPreAuth();
-	});
-	$.mobile.changePage("#loginPage");
+    $(document).on("pageshow", "#launching", function(event, ui){
+                   onGlobal();
+                   liveForm();
+                   if (checkPreAuth()){
+                        openScanBarcode();
+                   } else {
+                        openLogin();
+                   }
+                   });
 }
 
 //fonction qui permet d'afficher une alerte même si le système natif n'est pas accessible
-function showAlert(message, title) {
+function showAlert(current, message, title) {
     if (navigator.notification) {
         navigator.notification.alert(message, null, title, 'OK');
     } else {
-        alert(title ? (title + ": " + message) : message);
+   	console.log('affichage de popin');
+   	//var popup= $("#popupBasic");
+   	var popup = current.parents('div[data-role="page"]').find(".popupBasic");
+   	popup.find("h2").html(title);
+   	popup.find("p").html(message);
+   	popup.popup();
+   	popup.popup("open", null);
     }
 }
 
-function showModal(message, title) {
-    var returnBool = false;
+function showModal(current, message, title,confirm, cancel) {
     if (navigator.notification) {
         navigator.notification.confirm(
                                        message,
@@ -80,22 +159,44 @@ function showModal(message, title) {
                                        'OK, annuler');
         
     } else {
-        returnBool = confirm(title ? (title + ": " + message) : message);
+    	var initpopup = current.parents('div[data-role="page"]').find(".modalBasic");
+        var popup = initpopup.clone();
+        initpopup.after(popup);
+        var id = "m_" + Math.floor(Math.random() * 20000);
+        popup.attr("id", id);
+        popup.attr("class","");
+
+        $("#" + id).find("h2").html(title);
+        $("#" + id).find("p").html(message);
+        $("#" + id).popup();
+        $("#" + id + " #okbutton").on("click", function () {
+            if (confirm) {
+                confirm();
+            }
+        });
+        $("#" + id + " #kobutton").on("click", function () {
+            $("#" + id).popup('close');
+            if (cancel) {
+                cancel();
+            }
+        });
+        $("#" + id).popup("open", { role: "dialog"});
     }
-    return (returnBool);
 }
 
 //fonction de connection appelée depuis index.html
+//fonction qui récupère le token et le mot de passe
 function login(){
     //disable the button so we can't resubmit while we wait :
-    $("#submit").attr("disabled","disabled");
     var u = $("#email").val();
     var p = $("#password").val();
+    var current = $("#email");
     if(u != '' && p!= '') {
         $.ajax({
                type:'POST',
-               url: "http://dev-ws.paperus.fr/2/sessions",
+               url: host + "/2/sessions",
                data: {email:u,password:p},
+               async: false,
                statusCode:
                {
                200 : function(res){
@@ -104,87 +205,99 @@ function login(){
                window.localStorage["password"] = p;
                window.localStorage["token"]=res.token;
                window.localStorage["expireAt"]=res.expireAt;
-               window.location = "scanBarcode.html";
+               openScanBarcode();
                },
                401 : function(){
-               self.showAlert("Connexion impossible, le couple identifiant/mot de passe n'a pas été reconnu", "erreur");
+               self.showAlert(current,"Connexion impossible, le couple identifiant/mot de passe n'a pas été reconnu", "erreur");
                },
                400 : function(){
-               self.showAlert("votre champs email ne contient pas un email valide", "erreur");
+               self.showAlert(current,"votre champs email ne contient pas un email valide", "erreur");
                },
                500: function(){
-               self.showAlert("Le serveur vient de rencontrer une erreur inattendue, nous avons enregistré le problème.", "erreur");
+               self.showAlert(current,"Le serveur vient de rencontrer une erreur inattendue, nous avons enregistré le problème.", "erreur");
                },
                404: function(){
-               self.showAlert("le serveur ne répond pas, il semble y avoir un problème...", "erreur");
+               self.showAlert(current,"le serveur ne répond pas, il semble y avoir un problème...", "erreur");
                }
                },
                dataType: "JSON"
                });
-        $("#submit").removeAttr("disabled");
     } else {
-        self.showAlert("L'un des champs est resté vide", "erreur");
-        $("#submit").removeAttr("disabled");
-    }
+	    self.showAlert(current,"Le login et mot de passe sont obligatoire","erreur");    
+	   //		$('#popupLogin').popup("open");
+
+	    }
     return false;
 }
 
 //fonction qui est appelée par scanBarcode et qui récupère la liste des ISBNs vendus pui va chercher avec obtainContent les contenus.
 function obtainAllContent(){
-    console.log("j'entre dans obtainAllContent");
+    //event.preventDefault();
     var ISBNList=[];
+    var current = $("#eanField");
+
     $("input[type=text]").each(function(){
-                               console.log("j'entre dans .each");
-                       ISBNList.push($(this).val());
-                      // var i=$("#ISBN").val();
-                       });
-    console.log("j'ai maintenant ça dans ISBNList : "+ISBNList);
-    for (var i=0, c=ISBNList.length; i<c; i++){
-        console.log("je suis dans ma boucle for, tour "+i);
-        obtainContent(ISBNList[i]);
+        if (this.name == "ISBN" && $(this).val() != ''){
+            ISBNList.push($(this).val());
+        }
+    });
+    if (ISBNList.length > 0) {
+        console.log("ISBNList : " + ISBNList);
+        for (var i = 0, c = ISBNList.length; i < c; i++) {
+            log("ISBNList : item " + i);
+            obtainContent(ISBNList[i], current);
+            log("ISBNList : item " + i + " fin");
+        }
+        log("ISBNList : openChooseContent");
+        openChooseContent();
+        log("ISBNList : openChooseContent fin");
     }
-    //window.location = "chooseContent.html";
+    else {
+    console.log(current);
+        self.showAlert(current, "vous n'avez saisi aucun ISBN","Information");
+    }
+    return false;
 }
 
 //fonction qui récupère le contenu associé à un ISBN appelée depuis scanBarcode.html
-function obtainContent(i){
-    var URL = 'http://dev-ws.paperus.fr/2/contents';
+function obtainContent(i, current){
+    var URL = host + '/2/contents';
     var contentElem;
     if(i != '') {
         $.ajax({
-            type: "GET",
-            url: URL,
-            dataType: JSON,
+            //type: 'GET',
+            url: URL +"?isbn="+i+"&grouped=true",
+            //contentType: "application/json",
+            dataType: "json",
             beforeSend: setHeader,
-            data: {isbn:i, grouped:true},
+            //data: {isbn:i, grouped:true},
             async: false,
             statusCode: {
-                200: function(res){
-                    //Je teste si ma zone de stockage pour contenus a été initialisée
-                    if (window.sessionStorage["contenus"]!= undefined){
-                        //Si oui alors j'ajoute le nouveau contenu à mon tableau et je sauvegarde également l'ISBN associé
-                        var ISBNList = JSON.parse(window.sessionStorage["ISBNContentList"]);
-                        ISBNList.push(i);
-                        window.sessionStorage["ISBNContentList"]=JSON.stringify(ISBNList);
-                        var JSONTabContent = JSON.parse(window.sessionStorage["contenus"]);
-                        JSONTabContent.push(res.responseText);
-                        window.sessionStorage["contenus"]=JSON.stringify(JSONTabContent);
+                200: function (res) {
+                        //Je teste si ma zone de stockage pour contenus a été initialisée
+                        if (window.sessionStorage["contenus"] != undefined) {
+                            //Si oui alors j'ajoute le nouveau contenu à mon tableau et je sauvegarde également l'ISBN associé
+                            var ISBNList = JSON.parse(window.sessionStorage["ISBNContentList"]);
+                            ISBNList.push(i);
+                            window.sessionStorage["ISBNContentList"] = JSON.stringify(ISBNList);
+                            var JSONTabContent = JSON.parse(window.sessionStorage["contenus"]);
+                            JSONTabContent.push(res.responseText);
+                            window.sessionStorage["contenus"] = JSON.stringify(JSONTabContent);
                         } else {
                             //Sinon j'initialise
-                            window.sessionStorage["ISBNContentList"]=JSON.stringify([i]);
-                            window.sessionStorage["contenus"]=JSON.stringify([res.responseText]);
-                            }
-                        window.location = "chooseContent.html";
+                            window.sessionStorage["ISBNContentList"] = JSON.stringify([i]);
+                            window.sessionStorage["contenus"] = JSON.stringify([JSON.stringify(res)]);
+                        }
                     },
                 400: function(){
-                    self.showAlert("votre champs ISBN ne contient pas un ISBN valide", "erreur");
+                    self.showAlert(current, "votre champs ISBN ne contient pas un ISBN valide", "erreur");
                     },
                 401: function(){
-                    self.showAlert("Connexion impossible, Vous avez été déconnecté", "erreur");
+                    self.showAlert(current, "Connexion impossible, Vous avez été déconnecté", "erreur");
                     if (checkPreAuth()) {
-                        self.showAlert("reconnecté ! réessayez", "information");
+                        self.showAlert(current, "reconnecté ! réessayez", "information");
                     } else {
-                        self.showAlert("reconnexion impossible, vérifiez vos identifiants","erreur");
+                        self.showAlert(current, "reconnexion impossible, vérifiez vos identifiants","erreur");
                         logout();
                         }
                     },
@@ -201,12 +314,11 @@ function obtainContent(i){
                     }
                     },
                 500: function(){
-                    self.showAlert("erreur interne au serveur, veuillez réessayer plus tard", "erreur");
+                    self.showAlert(current, "erreur interne au serveur, veuillez réessayer plus tard", "erreur");
                     }
                     }
             });
     } else {
-        self.showAlert("vous n'avez saisi aucun ISBN");
         $("#submit").removeAttr("disabled");
     }
     return false;
@@ -225,18 +337,20 @@ function setHeaderTags(xhr){
 
 //Fonction appelée par makeCodes qui va créer en sessionStorage deux tableaux : ISBNSelected et ContentSelected à partir de ce qu'a sélectionné l'utilisateur dans son formulaire ChoosContent.html
 function memorizeContentSelected(ids){
+    var idSelected=ids
     var contentSelected = [];
     var ISBNSelected = [];
     var content={};
     var contentsList = JSON.parse(window.sessionStorage["contenus"]);
     var contentInOneISBN = [];
     var ISBNList= JSON.parse(window.sessionStorage["ISBNContentList"]);
-    for (var i=0, c=ids.length; i<c; i++){
+    for (var i=0, c=idSelected.length; i<c; i++){
         for (var j=0, d=ISBNList.length; j<d; j++){
             contentInOneISBN = JSON.parse(contentsList[j]);
             for (var k=0, e=contentInOneISBN.length; k<e; k++){
                 content = contentInOneISBN[k];
-                if (content.id == ids[i]){
+                if (content.id == idSelected[i]){
+                    idSelected[i]="default";
                     contentSelected.push(content);
                     ISBNSelected.push(ISBNList[j]);
                 }
@@ -253,15 +367,17 @@ function memorizeContentSelected(ids){
 function selectedIds (){
     var selectedItems=[];
     $("input[type=checkbox]:checked").each(function(){
-                                           selectedItems.push($(this).attr('id'));
+                                           selectedItems.push($(this).attr('name'));
                                            });
     return selectedItems;
 }
+
 //fonction globale appelée par chooseContent.html, elle parcourt la liste des contenus, ajoute ceux qui sont sélectionnés à un tableau puis pour chacun des éléments du tableau elle appelle generateQRCode
 //je dois créer des tableaux : content qui contient : {ISBN, res.contentText} puis contentSelected qui contient {ISBN, res.contentText}
 //je parcourt les deux, l'un pour
 function makeCodes(){
     var ISBNSelected=[];
+    var current=$("#choice");
     // je récupère dans un tableau ma liste des Ids sélectionnés
     var selectedItems = selectedIds();
     // Je mémorise les infos relatives à ces Ids
@@ -270,13 +386,16 @@ function makeCodes(){
     ISBNSelected = JSON.parse(window.sessionStorage["ISBNSelected"]);
     //Je calcule le total à rajouter à la vente du livre physique
     var total = calculateTotal(contentSelected);
-    if (total>0){self.showModal("Avez vous bien facturé " +total+ " euros au client en plus de sa commande de livres physiques ? Sinon, annuler et rester sur cette page", "information");}
+    if (total > 0) {
+        self.showModal(current, "Avez vous bien facturé " + total + " euros au client en plus de sa commande de livres physiques ? Sinon, annuler et rester sur cette page", "information");
+    }
     // et maintenant pour tous les contenus sélectionnés je vais chercher un tag
     for (i=0, c=selectedItems.length; i<c; i++){
-        generateQRCode(ISBNSelected[i], selectedItems[i]);
+        generateQRCode(ISBNSelected[i], contentSelected[i].id, current);
     }
     //maintenant que j'ai tout préparé, je passe à la présentation de mes codes
-    window.location = "visualizeTag.html";
+    openVisualizeTag();
+    return false;
 }
 
 // fonction qui calcule le total à régler par le lecteur en fonction des choix sélectionnés par le libraire
@@ -286,7 +405,6 @@ function calculateTotal(contentSelected){
     if (contentSelected != ''){
         for (var i=0, c=contentSelected.length; i<c; i++){
             contentPrice = contentSelected[i].price;
-            console.log(contentPrice);
             total = total + contentPrice;
         }
         return total;
@@ -297,8 +415,8 @@ function calculateTotal(contentSelected){
 
 //je génère un tableau appelé 'tags' que j'ai en mémoire et que je pourrai parcourir plus tard.
 //fonction qui génère le tag, appelée depuis chooseContent.html
-function generateQRCode(i, objectID){
-    var URL = 'http://dev-ws.paperus.fr/2/tags';
+function generateQRCode(i, objectID, current){
+    var URL = host + '/2/tags';
     //var i= $("#ISBN").val();
     //var objectID= $("#objID").val();
         if (objectID!='') {
@@ -339,57 +457,138 @@ function generateQRCode(i, objectID){
                             }
                            },
                       400: function(){
-                           self.showAlert("votre champs ISBN ne contient pas un ISBN valide", "erreur");
+                           self.showAlert(current, "votre champs ISBN ne contient pas un ISBN valide", "erreur");
                            },
                       401: function(){
-                            self.showAlert("Connexion impossible, Vous avez été déconnecté", "erreur");
+                            self.showAlert(current, "Connexion impossible, Vous avez été déconnecté", "erreur");
                             if (checkPreAuth()) {
-                                self.showAlert("reconnecté ! réessayez", "information");
+                                self.showAlert(current, "reconnecté ! réessayez", "information");
                             } else {
-                                self.showAlert("reconnexion impossible, vérifiez vos identifiants","erreur");
+                                self.showAlert(current, "reconnexion impossible, vérifiez vos identifiants","erreur");
                                 logout();
                                 }
                             },
                       404: function(){
-                           self.showAlert("il n'y a pas de code à afficher", "erreur");
+                           self.showAlert(current, "il n'y a pas de code à afficher", "erreur");
                            },
                       410: function(){
-                           self.showAlert("tous les codes pour cette opération promotionnelle ont été vendus", "erreur");
+                           self.showAlert(current, "tous les codes pour cette opération promotionnelle ont été vendus", "erreur");
                            },
                       500: function(){
-                           self.showAlert("erreur interne au serveur, veuillez réessayer plus tard", "erreur");
+                           self.showAlert(current, "erreur interne au serveur, veuillez réessayer plus tard", "erreur");
                            },
                     },
                
                });
                } else {
-                   self.showAlert("vous n'avez sélectionné aucun contenu, retour à l'accueil", "information")
-                    sessionStorage.clear();
-                    window.location = "scanBarcode.html";
+                self.showModal(current, "vous n'avez sélectionné aucun contenu, retour à l'accueil ?", "information",
+                    function () {
+                        sessionStorage.clear();
+                        openScanBarcode();
+                    });
                }
                return false;
 }
 
-function backToHome(){
+//fontion pour revenir à l'accueil et effacer la vente actuelle TODO savoir où je suis
+function backToHome(current){
+	console.log(current);
     var bool = false;
-    if (window.location != "visualizeTag.html") {
-        bool = self.showModal("Annuler cette vente et revenir à l'accueil ?", "information");
+    var activePage = $.mobile.activePage.attr("id");
+    if (activePage == "visualizeTag") {
+        self.showModal(current, "les codes ont-ils tous été scannés ? Sinon, annuler et rester sur cette page", "information", function () {
+            sessionStorage.clear();
+            openScanBarcode();
+        });
     } else {
-        bool = self.showModal("les codes ont-ils tous été scannés ? Sinon, annuler et rester sur cette page", "information");
-    }
-    if (bool) {
-    sessionStorage.clear();
-    window.location = "scanBarcode.html";
+        self.showModal(current, "annuler cette vente et reprendre du début ?", "information", function () {
+            sessionStorage.clear();
+            openScanBarcode();
+        });
     }
 }
 
-function logout(){
-    if (self.showModal("Souhaitez-vous vraiment vous déconnecter ?", "information")) {
-        self.showAlert("Déconnexion en cours", "information");
+//fonction de déconnexion !TODO : savoir où je suis
+function logout() {
+	var current=$("#account");
+    self.showModal(current, "Souhaitez-vous vraiment vous déconnecter ?", "information", function () {
+        self.showAlert(current, "Déconnexion en cours", "information");
         sessionStorage.clear();
         localStorage.clear();
-        window.location = "index.html";
-    }
+        openLogin();
+    });
 }
 
+//fonction appelée par ScanBarcode qui ajoute à la volée des champs EAN13
+function liveForm() {
+    log(liveForm);
+    $(document).on("keypress", "#ISBN", function (event) {
+        if (event.which == 13) {
+            event.preventDefault();
+            $.get('js/template.html', function(template) {
+                var html = $(template).filter('#tpl-ISBN').html();
+                $('#eanField').append(html);
+                $('#eanField').find("#ISBN").last().focus();
+            }, 'html');
+        }
+    });
+}
 
+//fonction qui génère la page chooseContent.html
+function drawContents() {
+    log("drawContents");
+    $('#articleKOContent').html('');
+    $('#articleOKContent').html('');
+    if (window.sessionStorage["ISBNNoContentList"]!= undefined){
+        $.get('js/template.html', function(template) {
+              // charge le fichier templates et récupère le contenu de la
+              var ISBNNoContent= {"ISBN":JSON.parse(window.sessionStorage["ISBNNoContentList"])};
+              var template = $(template).filter('#tpl-noContent').html();
+              var html = Mustache.to_html(template, ISBNNoContent);
+              $('#articleKOContent').html(html);
+              },'html'); }
+    if (window.sessionStorage["ISBNContentList"]!= undefined){
+        $.get('js/template.html', function(template) {
+              // charge le fichier templates et récupère le contenu de la
+              var ISBNContentList = [];
+              var ISBNContent= {};
+              var Contents = JSON.parse(window.sessionStorage["contenus"]);
+              var ISBNList= JSON.parse(window.sessionStorage["ISBNContentList"]);
+              for (var i=0, c=ISBNList.length; i<c; i++){
+              ISBNContent.ISBN = ISBNList.pop();
+              var content = JSON.parse(Contents.pop())
+              for (var j=0, d=content.length; j<d; j++){
+                content[j] = { content : content[j], idCheckBox : Math.floor(Math.random() * 100000) + 1}
+              }
+              ISBNContent.content = content;
+              ISBNContentList.push(ISBNContent);
+              ISBNContent={};
+              }
+              var template = $(template).filter('#tpl-contentList').html();
+              ISBNContentList={ISBNList: ISBNContentList};
+              var html = Mustache.to_html(template, ISBNContentList);
+              $('#articleOKContent').html(html).trigger('create');
+              },'html');}
+    
+}
+
+//fonction qui génère la page visualizeTag.html
+function drawTags(){
+    if (window.sessionStorage["tagList"]!= undefined){
+        $.get('js/template.html', function(template) {
+              // charge le fichier templates et récupère le contenu de la
+              var ISBNTagList = JSON.parse(window.sessionStorage["tagList"]);
+              var template = $(template).filter('#tpl-QRCode').html();
+              ISBNTagList={ISBNTagList: ISBNTagList};
+              var html = Mustache.to_html(template, ISBNTagList);
+              $('#Code').html(html);
+              },'html');}
+    
+}
+
+//fonction appelée par le formulaire de scanBarcode pour remettre celui-ci à 0
+function resetScanBarcode(){
+    $("input[type=text]").each(function () { $(this).val(''); });
+    $("#eanField").html('');
+    return false;
+}
