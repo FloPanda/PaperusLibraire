@@ -29,8 +29,6 @@
     <gap:splash src="splash/ios/Default-Portrait_at_2x.png"  gap:platform="ios" width="1536" height="2008" />
 
     
-    <gap:plugin name="com.phonegap.plugins.barcodescanner" />
-    <gap:plugin name="com.arnia.plugins.smsbuilder" />
 
     <content src="index.html" />
     <access origin="*" />

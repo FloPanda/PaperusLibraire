@@ -1,13 +1,14 @@
 //todo : vérifier en permanence que le mec est connecté
-var host = "http://dev-ws.paperus.fr";
+var host = "https://ws.paperus.fr";
 var debug = true;
 function log(mess) {
     if (debug) {
         console.log(mess);
     }
 }
+
 function init() {
-	//document.addEventListener("deviceready", deviceReady, true);
+	document.addEventListener("deviceready", deviceReady, true);
     deviceReady();
 }
 
@@ -15,17 +16,23 @@ function checkPreAuth() {
     if(window.localStorage["email"] != undefined && window.localStorage["password"] != undefined) {
         var u= window.localStorage["email"];
         var p= window.localStorage["password"];
-        var okbool = handleLogin(u, p);
-        if (okbool) {
-            window.localStorage["email"]=u;
-            window.localStorage["password"]=p;
+        var expire = new Date (window.localStorage["expireAt"]);
+        var maintenant = new Date ();
+        if (expire < maintenant) {
+            var okbool = handleLogin(u, p);
+            if (okbool) {
+                window.localStorage["email"]=u;
+                window.localStorage["password"]=p;
+            } else {
+                window.localStorage.removeItem("email");
+                window.localStorage.removeItem("password");
+            }
+            return (okbool);
         } else {
-            window.localStorage.removeItem("email");
-            window.localStorage.removeItem("password");
+            return (true);
         }
-        return (okbool);
-    } else {
-        return (false);
+        } else {
+            return (false);
     }
 }
 
@@ -33,6 +40,7 @@ function checkPreAuth() {
 function handleLogin(u,p) {
     if(u != '' && p!= '') {
         var bool = false;
+        var current = $("#email");
         $.ajax({
                type:'POST',
                url: host + "/2/sessions",
@@ -72,10 +80,9 @@ function onGlobal(){
                    if(checkPreAuth()){openScanBarcode();}
                    });
     $(document).on("pageshow",  "#scanBarcode", function(event, ui) {
-                   
+                   resetScanBarcode();
                    } );
     $(document).on("pageshow", "#chooseContent", function (event, ui) {
-                   log("chooseContent");
                    drawContents();
                    } );
     $(document).on("pageshow",  "#visualizeTag", function(event, ui) {
@@ -125,6 +132,7 @@ function openSubscription(){
 //fonction appelée par init qui vérifie si nous avons des identifiants, nous connecte le cas échéant ou nous propose de nous connecter
 function deviceReady() {
     $(document).on("pageshow", "#launching", function(event, ui){
+                   $("body").addClass("ios7");
                    onGlobal();
                    liveForm();
                    if (checkPreAuth()){
@@ -140,7 +148,6 @@ function showAlert(current, message, title) {
     if (navigator.notification) {
         navigator.notification.alert(message, null, title, 'OK');
     } else {
-   	console.log('affichage de popin');
    	//var popup= $("#popupBasic");
    	var popup = current.parents('div[data-role="page"]').find(".popupBasic");
    	popup.find("h2").html(title);
@@ -242,18 +249,12 @@ function obtainAllContent(){
         }
     });
     if (ISBNList.length > 0) {
-        console.log("ISBNList : " + ISBNList);
         for (var i = 0, c = ISBNList.length; i < c; i++) {
-            log("ISBNList : item " + i);
             obtainContent(ISBNList[i], current);
-            log("ISBNList : item " + i + " fin");
         }
-        log("ISBNList : openChooseContent");
         openChooseContent();
-        log("ISBNList : openChooseContent fin");
     }
     else {
-    console.log(current);
         self.showAlert(current, "vous n'avez saisi aucun ISBN","Information");
     }
     return false;
@@ -281,7 +282,7 @@ function obtainContent(i, current){
                             ISBNList.push(i);
                             window.sessionStorage["ISBNContentList"] = JSON.stringify(ISBNList);
                             var JSONTabContent = JSON.parse(window.sessionStorage["contenus"]);
-                            JSONTabContent.push(res.responseText);
+                            JSONTabContent.push(JSON.stringify(res));
                             window.sessionStorage["contenus"] = JSON.stringify(JSONTabContent);
                         } else {
                             //Sinon j'initialise
@@ -387,15 +388,19 @@ function makeCodes(){
     //Je calcule le total à rajouter à la vente du livre physique
     var total = calculateTotal(contentSelected);
     if (total > 0) {
-        self.showModal(current, "Avez vous bien facturé " + total + " euros au client en plus de sa commande de livres physiques ? Sinon, annuler et rester sur cette page", "information");
+        self.showModal(current, "Avez vous bien facturé " + total + " euros au client en plus de sa commande de livres physiques ? Sinon, annuler et rester sur cette page", "information", function () {
+                       for (i=0, c=selectedItems.length; i<c; i++){
+                       generateQRCode(ISBNSelected[i], contentSelected[i].id, current);
+                       }
+                       openVisualizeTag();
+                       });
+    } else {
+        for (i=0, c=selectedItems.length; i<c; i++){
+            generateQRCode(ISBNSelected[i], contentSelected[i].id, current);
+        }
+        openVisualizeTag();
     }
-    // et maintenant pour tous les contenus sélectionnés je vais chercher un tag
-    for (i=0, c=selectedItems.length; i<c; i++){
-        generateQRCode(ISBNSelected[i], contentSelected[i].id, current);
-    }
-    //maintenant que j'ai tout préparé, je passe à la présentation de mes codes
-    openVisualizeTag();
-    return false;
+        return false;
 }
 
 // fonction qui calcule le total à régler par le lecteur en fonction des choix sélectionnés par le libraire
@@ -411,6 +416,55 @@ function calculateTotal(contentSelected){
     } else {
         return total;
     }
+}
+
+//fonction qui envoie le formulaire d'inscription
+function subscribe (){
+    var name = $("#name").val();
+    var firstname = $("#firstname").val();
+    var email = $("#emailsubscribe").val();
+    var phone = $("#phone").val();
+    var bookstoreCommercialName = $("#bookstoreCommercialName").val();
+    var bookstoreEntity = $("#bookstoreEntity").val();
+    var RCSNumber = $("#RCSNumber").val();
+    var bookstoreRIB = $("#bookstoreRIB").val();
+    var current = $("#RCSNumber");
+    if(name != '' && firstname != '' && email != '' && phone != '' && bookstoreCommercialName != '' &&  bookstoreEntity  != '' && RCSNumber != '') {
+        $.ajax({
+               type:'POST',
+               url: host + "/2/Registers",
+               data: {
+                firstName:firstname,
+                lastName:name,
+                phoneNumber:phone,
+                email:email,
+                bookstoreName:bookstoreCommercialName,
+                companyName:bookstoreEntity,
+                rcsNumber:RCSNumber,
+                iban:bookstoreRIB
+                },
+               async: false,
+               statusCode:
+               {
+               200 : function(res){
+               self.showAlert(current,"Nous avons bien reçu votre demande d'inscription, vous serez rencontactés très prochainnement","Merci,");
+               },
+               401 : function(){
+               self.showAlert(current,"Connexion impossible, nous n'avons pas reçu toutes vos données, réessayez plus tard", "erreur");
+               },
+               400 : function(){
+               self.showAlert(current,"Connexion impossible, nous n'avons pas reçu toutes vos données, réessayez plus tard", "erreur");               },
+               500: function(){
+               self.showAlert(current,"Connexion impossible, nous n'avons pas reçu toutes vos données, réessayez plus tard", "erreur");               },
+               404: function(){
+               self.showAlert(current,"Connexion impossible, nous n'avons pas reçu toutes vos données, réessayez plus tard", "erreur");               }
+               },
+               dataType: "JSON"
+               });
+    } else {
+	    self.showAlert(current,"Tous les champs obligatoires n'ont pas été remplis","erreur");
+    }
+    return false;
 }
 
 //je génère un tableau appelé 'tags' que j'ai en mémoire et que je pourrai parcourir plus tard.
@@ -452,7 +506,6 @@ function generateQRCode(i, objectID, current){
                                     QRCode : QRCode,
                                     };
                                 tagList.push(tag);
-                                console.log(tagList);
                                 window.sessionStorage["tagList"]= JSON.stringify(tagList);
                             }
                            },
@@ -492,7 +545,6 @@ function generateQRCode(i, objectID, current){
 
 //fontion pour revenir à l'accueil et effacer la vente actuelle TODO savoir où je suis
 function backToHome(current){
-	console.log(current);
     var bool = false;
     var activePage = $.mobile.activePage.attr("id");
     if (activePage == "visualizeTag") {
@@ -501,10 +553,24 @@ function backToHome(current){
             openScanBarcode();
         });
     } else {
+        if (activePage == "scanBarcode") {
+            self.showModal(current, "effacer les codes saisis et reprendre au début ?", "information", function (){
+                           resetScanBarcode();
+                           $.mobile.changePage(
+                                               window.location.href,
+                                               {
+                                               allowSamePageTransition : true,
+                                               transition              : 'none',
+                                               showLoadMsg             : false,
+                                               reloadPage              : true
+                                               }
+                                               );});
+        } else {
         self.showModal(current, "annuler cette vente et reprendre du début ?", "information", function () {
             sessionStorage.clear();
             openScanBarcode();
         });
+        }
     }
 }
 
@@ -521,7 +587,6 @@ function logout() {
 
 //fonction appelée par ScanBarcode qui ajoute à la volée des champs EAN13
 function liveForm() {
-    log(liveForm);
     $(document).on("keypress", "#ISBN", function (event) {
         if (event.which == 13) {
             event.preventDefault();
@@ -529,14 +594,13 @@ function liveForm() {
                 var html = $(template).filter('#tpl-ISBN').html();
                 $('#eanField').append(html);
                 $('#eanField').find("#ISBN").last().focus();
-            }, 'html');
+                  }, 'html');
         }
     });
 }
 
 //fonction qui génère la page chooseContent.html
 function drawContents() {
-    log("drawContents");
     $('#articleKOContent').html('');
     $('#articleOKContent').html('');
     if (window.sessionStorage["ISBNNoContentList"]!= undefined){
@@ -555,15 +619,15 @@ function drawContents() {
               var Contents = JSON.parse(window.sessionStorage["contenus"]);
               var ISBNList= JSON.parse(window.sessionStorage["ISBNContentList"]);
               for (var i=0, c=ISBNList.length; i<c; i++){
-              ISBNContent.ISBN = ISBNList.pop();
-              var content = JSON.parse(Contents.pop())
-              for (var j=0, d=content.length; j<d; j++){
-                content[j] = { content : content[j], idCheckBox : Math.floor(Math.random() * 100000) + 1}
-              }
-              ISBNContent.content = content;
-              ISBNContentList.push(ISBNContent);
-              ISBNContent={};
-              }
+                ISBNContent.ISBN = ISBNList.pop();
+                var content = JSON.parse(Contents.pop());
+                for (var j=0, d=content.length; j<d; j++){
+                    content[j] = { content : content[j], idCheckBox : Math.floor(Math.random() * 100000) + 1}
+                }
+                ISBNContent.content = content;
+                ISBNContentList.push(ISBNContent);
+                ISBNContent={};
+                }
               var template = $(template).filter('#tpl-contentList').html();
               ISBNContentList={ISBNList: ISBNContentList};
               var html = Mustache.to_html(template, ISBNContentList);
@@ -592,3 +656,13 @@ function resetScanBarcode(){
     $("#eanField").html('');
     return false;
 }
+
+//fonction appelée par scanbarcode qui ajoute une ligne
+function addISBN(){
+    $.get('js/template.html', function(template) {
+          var html = $(template).filter('#tpl-ISBN').html();
+          $('#eanField').append(html);
+          $('#eanField').find("#ISBN").last().focus();
+          }, 'html');
+}
+

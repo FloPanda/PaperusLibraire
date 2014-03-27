@@ -1,0 +1,91 @@
+<!-- Page regroupant les templates utilisés ailleurs -->
+
+
+
+<!-- template qui liste les ISBN des livres avec des contenus et les contenus associés-->
+<script ty="text/html" id="tpl-contentList">
+            Contenus disponibles pour ces livres : <br/><br/>
+    {{#ISBNList}}<article>
+        <header>
+            <h2>{{ISBN}}</h2>
+        </header>
+        <ul class="checklist">
+        {{#content}}<li class="contentELem">
+        <div class="ui-checkbox">
+		<input type="checkbox" name={{content.id}} id={{idCheckBox}} class="custom" />
+		<label for={{idCheckBox}}>
+            {{name}}
+            <div class= "contentDesc">
+            <ul class="contentAttribute">
+                <li>Type : {{content.type}}</li>
+                <li>Description : {{content.description}}</li>
+                <li>Format : {{#formats}}{{format}}, {{/formats}}</li>
+                <li>Prix : {{content.price}} euros</li>
+            </ul>
+        
+            </div></label>
+        </div>
+
+        </li>{{/content}}
+        </ul>
+    </article>{{/ISBNList}}
+    <br/>
+    <button data-theme="a" data-form="ui-btn-up-a" class=" ui-btn ui-btn-a ui-btn-icon-left ui-shadow ui-corner-all" onclick="return makeCodes();" data-role="none">Génerer les codes</button>
+    
+</script>
+    
+<!-- template qui liste les ISBNs sans contenus associés-->
+<script type="text/html" id="tpl-noContent">
+        <header>
+            <h2>Ces livres sont actuellement sans contenu associé :</h2>
+        </header>
+        <ul>
+        {{#ISBN}}<li>{{.}}</li>{{/ISBN}}
+        </ul>
+</script>
+
+<!-- template qui donne un QRCode-->
+<script type="text/html" id="tpl-QRCode">
+    Voici les QRCodes à scanner :
+    {{#ISBNTagList}}<article>
+    <header>
+        <h2>{{ISBN}}</h2>
+    </header>
+    <div class= QRCode>
+    <img width="250" src="data:image/gif;base64,{{QRCode}}" alt={{link}}>
+    </div>
+
+    <a href="mailto:?subject=Offre couplée de votre libraire&body=Retrouvez votre contenu numérique à l'adresse http://dev-www.paperus.fr/Consume/{{link}} ">Envoyer le lien par email</a>
+    </article>{{/ISBNTagList}}
+    <a href="mailto:?subject=Offre couplée de votre libraire&body=Retrouvez vos contenus numériques à ces adresses : <br/>{{#ISBNTagList}}http://dev-www.paperus.fr/consume/{{link}} <br/>{{/ISBNTagList}}"> Envoyer tous les liens par email</a> 
+</script>
+
+<!-- template du formulaire ISBN -->
+<script type="text/html" id="tpl-ISBN">
+    <div class="ui-input-text ui-body-inherit ui-corner-all ui-shadow-inset"><input type="text" pattern='[0-9]*' name="ISBN" id="ISBN" value="" placeholder="EAN13" maxlength="13"></div>
+</script>
+
+<!-- template d'une popup -->
+<script typr="text/html" id="tpl-PopUp">
+    <div data-role="popup" id="popupLogin" class="ui-content">
+		<div data-role="header">
+			<h1>My dialog heading</h1>
+		</div>
+		<div data-role="content">
+			<p>Content goes here.</p>
+		</div>
+    </div>
+</script>
+
+<!-- template d'une modale -->
+<script typr="text/html" id="tpl-Modal">
+    <div data-role="popup" id="popupLogin" class="ui-content">
+		<div data-role="header">
+			<h1>My dialog heading</h1>
+		</div>
+		<div data-role="content">
+			<p>Content goes here.</p>
+		</div>
+    </div>
+</script>
+
