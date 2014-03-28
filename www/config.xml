@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget
     id="fr.paperus.librairie"
-    version="0.0.1"
+    version="1.0.1"
     xmlns="http://www.w3.org/ns/widgets"
     xmlns:gap="http://phonegap.com/ns/1.0">
     <name>Paperus librairie</name>
@@ -27,6 +27,10 @@
     <!-- retina iPad -->
     <gap:splash src="splash/ios/Default-Landscape_at_2x.png" gap:platform="ios" width="2048" height="1496" />
     <gap:splash src="splash/ios/Default-Portrait_at_2x.png"  gap:platform="ios" width="1536" height="2008" />
+    <icon gap:density="ldpi" gap:platform="android" src="icons/android/icon-36-ldpi.png" />
+    <icon gap:density="mdpi" gap:platform="android" src="icons/android/icon-48-mdpi.png" />
+    <icon gap:density="hdpi" gap:platform="android" src="icons/android/icon-72-hdpi.png" />
+    <icon gap:density="xhdpi" gap:platform="android" src="icons/android/icon-96-xhdpi.png" />
 
     
 
